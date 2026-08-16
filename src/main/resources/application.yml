@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: traceforge
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+info:
+  app:
+    name: TraceForge
+    description: Local-first AI debugging and patch-validation platform for Java projects
+    version: 0.0.1-SNAPSHOT
