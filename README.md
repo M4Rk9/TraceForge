@@ -2,20 +2,43 @@
 
 TraceForge is a local-first AI debugging and patch-validation platform for Java projects.
 
-## Project status
+## Current milestone
 
-The project is under active development. The first release will focus on public Java 21 and Maven repositories.
+TraceForge can safely accept a public GitHub repository URL, perform a shallow clone with JGit, inspect the disposable workspace, and return repository metadata.
 
-## Planned capabilities
+### Repository inspection API
 
-- Clone public GitHub repositories
-- Parse Java source code with JavaParser
-- Retrieve evidence from stack traces and failing tests
-- Generate diagnoses and patches with a locally running Ollama model
-- Compile and test proposed patches in isolated Docker containers
-- Report evidence, confidence, compilation, and test results
+```http
+POST /api/repositories/clone
+Content-Type: application/json
 
-## Initial technology stack
+{
+  "repositoryUrl": "https://github.com/owner/java-maven-project"
+}
+```
+
+A successful response includes:
+
+- normalized repository URL
+- checked-out branch
+- HEAD commit SHA
+- repository size
+- Java source-file count
+- detected build system
+
+The cloned workspace is deleted after inspection.
+
+## Repository-cloning safeguards
+
+- only HTTPS URLs hosted on `github.com` are accepted
+- credentials, custom ports, query strings, fragments, and encoded paths are rejected
+- cloning is shallow and restricted to the default branch
+- clone operations use a configurable timeout
+- inspected repository size is limited to 100 MiB by default
+- symbolic links are not followed during inspection
+- temporary workspaces are removed after every request
+
+## Technology stack
 
 - Java 21
 - Spring Boot
@@ -27,6 +50,10 @@ The project is under active development. The first release will focus on public 
 - Docker
 - JUnit 5
 - GitHub Actions
+
+## Planned next milestone
+
+Parse Java source files into class- and method-level symbols using JavaParser.
 
 ## License
 

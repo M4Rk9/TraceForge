@@ -19,3 +19,9 @@ info:
     name: TraceForge
     description: Local-first AI debugging and patch-validation platform for Java projects
     version: 0.0.1-SNAPSHOT
+
+traceforge:
+  repository:
+    workspace-root: ${TRACEFORGE_WORKSPACE_ROOT:${java.io.tmpdir}/traceforge}
+    clone-timeout-seconds: ${TRACEFORGE_GIT_CLONE_TIMEOUT_SECONDS:30}
+    max-size-bytes: ${TRACEFORGE_MAX_REPOSITORY_SIZE_BYTES:104857600}

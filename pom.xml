@@ -19,6 +19,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <jgit.version>7.7.1.202607240634-r</jgit.version>
     </properties>
 
     <dependencies>
@@ -35,6 +36,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>${jgit.version}</version>
         </dependency>
 
         <dependency>
