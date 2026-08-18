@@ -1,5 +1,6 @@
 package com.traceforge.repository.application;
 
+import com.traceforge.analysis.infrastructure.JavaSourceIndexer;
 import com.traceforge.repository.api.CloneRepositoryResponse;
 import com.traceforge.repository.domain.RepositoryCloneMetadata;
 import com.traceforge.repository.exception.InvalidRepositoryUrlException;
@@ -46,6 +47,7 @@ class RepositoryCloneServiceTests {
                 new GitHubRepositoryUrlValidator(),
                 repositoryClient,
                 new RepositoryInspector(),
+                new JavaSourceIndexer(),
                 new WorkspaceManager(workspaceRoot.toString()),
                 1_000_000
         );
@@ -60,6 +62,12 @@ class RepositoryCloneServiceTests {
         assertThat(response.commitSha()).hasSize(40);
         assertThat(response.javaFileCount()).isEqualTo(1);
         assertThat(response.buildSystem()).isEqualTo("MAVEN");
+        assertThat(response.symbolIndex().parsedFileCount()).isEqualTo(1);
+        assertThat(response.symbolIndex().typeCount()).isEqualTo(1);
+        assertThat(response.symbolIndex().methodCount()).isZero();
+        assertThat(response.symbolIndex().types())
+                .extracting(type -> type.qualifiedName())
+                .containsExactly("example.App");
 
         try (var workspaces = Files.list(workspaceRoot)) {
             assertThat(workspaces).isEmpty();
@@ -74,6 +82,7 @@ class RepositoryCloneServiceTests {
                 new GitHubRepositoryUrlValidator(),
                 repositoryClient,
                 new RepositoryInspector(),
+                new JavaSourceIndexer(),
                 new WorkspaceManager(temporaryDirectory.resolve("workspaces").toString()),
                 1_000_000
         );

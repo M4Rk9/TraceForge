@@ -4,7 +4,7 @@ TraceForge is a local-first AI debugging and patch-validation platform for Java 
 
 ## Current milestone
 
-TraceForge can safely accept a public GitHub repository URL, perform a shallow clone with JGit, inspect the disposable workspace, and return repository metadata.
+TraceForge can safely accept a public GitHub repository URL, perform a shallow clone with JGit, inspect the disposable workspace, and build a Java symbol index with JavaParser.
 
 ### Repository inspection API
 
@@ -25,6 +25,9 @@ A successful response includes:
 - repository size
 - Java source-file count
 - detected build system
+- parsed and failed source-file counts
+- class, interface, enum, record, and annotation symbols
+- method signatures and source ranges for every indexed type
 
 The cloned workspace is deleted after inspection.
 
@@ -37,6 +40,10 @@ The cloned workspace is deleted after inspection.
 - inspected repository size is limited to 100 MiB by default
 - symbolic links are not followed during inspection
 - temporary workspaces are removed after every request
+
+## Java symbol index
+
+JavaParser reads each Java source file using the Java 21 language level. The response contains a deterministic symbol index with fully qualified type names, type kinds, repository-relative paths, source ranges, and methods declared directly by each type. Files that cannot be parsed are counted without preventing valid files from being indexed.
 
 ## Technology stack
 
@@ -53,7 +60,7 @@ The cloned workspace is deleted after inspection.
 
 ## Planned next milestone
 
-Parse Java source files into class- and method-level symbols using JavaParser.
+Accept stack traces and connect frames to the indexed source symbols.
 
 ## License
 
