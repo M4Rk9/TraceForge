@@ -1,5 +1,7 @@
 package com.traceforge.repository.application;
 
+import com.traceforge.analysis.domain.JavaSymbolIndex;
+import com.traceforge.analysis.infrastructure.JavaSourceIndexer;
 import com.traceforge.repository.api.CloneRepositoryResponse;
 import com.traceforge.repository.domain.GitHubRepository;
 import com.traceforge.repository.domain.RepositoryCloneMetadata;
@@ -19,6 +21,7 @@ public class RepositoryCloneService {
     private final GitHubRepositoryUrlValidator repositoryUrlValidator;
     private final JGitRepositoryClient repositoryClient;
     private final RepositoryInspector repositoryInspector;
+    private final JavaSourceIndexer javaSourceIndexer;
     private final WorkspaceManager workspaceManager;
     private final long maximumRepositorySizeBytes;
 
@@ -26,6 +29,7 @@ public class RepositoryCloneService {
             GitHubRepositoryUrlValidator repositoryUrlValidator,
             JGitRepositoryClient repositoryClient,
             RepositoryInspector repositoryInspector,
+            JavaSourceIndexer javaSourceIndexer,
             WorkspaceManager workspaceManager,
             @Value("${traceforge.repository.max-size-bytes:104857600}")
             long maximumRepositorySizeBytes
@@ -37,6 +41,7 @@ public class RepositoryCloneService {
         this.repositoryUrlValidator = repositoryUrlValidator;
         this.repositoryClient = repositoryClient;
         this.repositoryInspector = repositoryInspector;
+        this.javaSourceIndexer = javaSourceIndexer;
         this.workspaceManager = workspaceManager;
         this.maximumRepositorySizeBytes = maximumRepositorySizeBytes;
     }
@@ -57,6 +62,7 @@ public class RepositoryCloneService {
             );
 
             validateSupportedProject(facts);
+            JavaSymbolIndex symbolIndex = javaSourceIndexer.index(workspace.path());
 
             return new CloneRepositoryResponse(
                     repository.webUri().toString(),
@@ -64,7 +70,8 @@ public class RepositoryCloneService {
                     cloneMetadata.commitSha(),
                     facts.sizeBytes(),
                     facts.javaFileCount(),
-                    "MAVEN"
+                    "MAVEN",
+                    symbolIndex
             );
         }
     }
