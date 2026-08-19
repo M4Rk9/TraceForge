@@ -4,7 +4,28 @@ TraceForge is a local-first AI debugging and patch-validation platform for Java 
 
 ## Current milestone
 
-TraceForge can safely accept a public GitHub repository URL, perform a shallow clone with JGit, inspect the disposable workspace, and build a Java symbol index with JavaParser.
+TraceForge can securely clone a public Java Maven repository, index its source symbols with JavaParser, parse a JVM stack trace, and map each frame back to repository types and methods.
+
+### Stack-trace analysis API
+
+```http
+POST /api/analyses/stack-trace
+Content-Type: application/json
+
+{
+  "repositoryUrl": "https://github.com/owner/java-maven-project",
+  "stackTrace": "java.lang.IllegalStateException\n    at com.example.OrderService.placeOrder(OrderService.java:42)"
+}
+```
+
+Each parsed frame receives one result:
+
+- `EXACT_METHOD`: class, method name, and source line identify one method
+- `LINE_MATCH`: the source line identifies one method when the runtime name is synthetic
+- `TYPE_ONLY`: the class is indexed but the method cannot be selected safely
+- `UNMATCHED`: the frame does not belong to an indexed repository symbol
+
+The response includes repository and commit identity, symbol counts, parsed-frame counts, match counts, source paths, method signatures, and source ranges.
 
 ### Repository inspection API
 
@@ -17,21 +38,9 @@ Content-Type: application/json
 }
 ```
 
-A successful response includes:
+This lower-level endpoint returns repository metadata and the complete Java symbol index.
 
-- normalized repository URL
-- checked-out branch
-- HEAD commit SHA
-- repository size
-- Java source-file count
-- detected build system
-- parsed and failed source-file counts
-- class, interface, enum, record, and annotation symbols
-- method signatures and source ranges for every indexed type
-
-The cloned workspace is deleted after inspection.
-
-## Repository-cloning safeguards
+## Repository safeguards
 
 - only HTTPS URLs hosted on `github.com` are accepted
 - credentials, custom ports, query strings, fragments, and encoded paths are rejected
@@ -40,10 +49,15 @@ The cloned workspace is deleted after inspection.
 - inspected repository size is limited to 100 MiB by default
 - symbolic links are not followed during inspection
 - temporary workspaces are removed after every request
+- stack traces are limited to 100,000 characters and 512 parsed frames
 
 ## Java symbol index
 
-JavaParser reads each Java source file using the Java 21 language level. The response contains a deterministic symbol index with fully qualified type names, type kinds, repository-relative paths, source ranges, and methods declared directly by each type. Files that cannot be parsed are counted without preventing valid files from being indexed.
+JavaParser reads each Java source file using the Java 21 language level. The index contains fully qualified type names, type kinds, repository-relative paths, source ranges, and directly declared method signatures. Files that cannot be parsed are counted without preventing valid files from being indexed.
+
+## Stack-trace mapping
+
+The JVM parser supports ordinary frames, Java module prefixes, source lines, `Unknown Source`, `Native Method`, nested classes, anonymous classes, and generated proxy or lambda class names. Overloaded methods are selected only when their source ranges make the match unambiguous.
 
 ## Technology stack
 
@@ -60,7 +74,7 @@ JavaParser reads each Java source file using the Java 21 language level. The res
 
 ## Planned next milestone
 
-Accept stack traces and connect frames to the indexed source symbols.
+Create method-level source chunks and deterministic exact retrieval from stack-trace matches, including relevant tests and neighbouring types.
 
 ## License
 

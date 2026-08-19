@@ -1,5 +1,6 @@
 package com.traceforge.repository.api;
 
+import com.traceforge.analysis.exception.StackTraceParseException;
 import com.traceforge.repository.exception.InvalidRepositoryUrlException;
 import com.traceforge.repository.exception.RepositoryCloneException;
 import com.traceforge.repository.exception.RepositoryTooLargeException;
@@ -19,6 +20,13 @@ public class ApiExceptionHandler {
             InvalidRepositoryUrlException exception
     ) {
         return problem(HttpStatus.BAD_REQUEST, "Invalid repository URL", exception.getMessage());
+    }
+
+    @ExceptionHandler(StackTraceParseException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidStackTrace(
+            StackTraceParseException exception
+    ) {
+        return problem(HttpStatus.BAD_REQUEST, "Invalid stack trace", exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
